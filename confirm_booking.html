@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Booking - SkyVoyage</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #e0f7fa, #80deea);
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            color: #0288d1;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .details-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            text-align: left;
+        }
+        .details-section h2 {
+            font-size: 1.5rem;
+            color: #0288d1;
+            margin-bottom: 10px;
+        }
+        .details-section p {
+            font-size: 1rem;
+            color: #444;
+            margin: 5px 0;
+        }
+        .form-section {
+            margin-top: 20px;
+        }
+        .form-section h2 {
+            font-size: 1.5rem;
+            color: #0288d1;
+            margin-bottom: 15px;
+        }
+        .form-section label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .form-section input,
+        .form-section select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        .form-section .payment-option {
+            margin-bottom: 15px;
+        }
+        .form-section .payment-option label {
+            display: inline;
+            font-weight: normal;
+            margin-left: 5px;
+        }
+        .form-section .payment-details {
+            display: none;
+        }
+        .form-section .netbanking-details {
+            display: none;
+        }
+        .form-section button[type="submit"] {
+            background: linear-gradient(90deg, #0288d1, #03a9f4);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        .form-section button[type="submit"]:hover {
+            background: linear-gradient(90deg, #0277bd, #039be5);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Confirm Your Booking</h1>
+
+    <div class="details-section">
+        <h2>Flight Details</h2>
+        <p><strong>Flight:</strong> <span id="flight-name"></span></p>
+        <p><strong>Route:</strong> <span id="route"></span></p>
+        <p><strong>Departure:</strong> <span id="departure"></span></p>
+        <p><strong>Arrival:</strong> <span id="arrival"></span></p>
+        <p><strong>Class:</strong> <span id="class"></span></p>
+        <p><strong>Seat:</strong> <span id="seat"></span></p>
+        <p><strong>Premium Seat:</strong> <span id="premium-enabled"></span></p>
+        <p><strong>Luggage Bin:</strong> <span id="bin-slot"></span></p>
+        <p><strong>Total Cost:</strong> ₹<span id="total-cost"></span></p>
+    </div>
+
+    <div class="form-section">
+        <h2>Enter Passenger and Payment Details</h2>
+        <form id="passengerPaymentForm" onsubmit="submitBooking(event)">
+            <!-- Hidden fields for flight data -->
+            <input type="hidden" id="form-flightId" name="flightId">
+            <input type="hidden" id="form-flightName" name="flightName">
+            <input type="hidden" id="form-route" name="route">
+            <input type="hidden" id="form-departure" name="departure">
+            <input type="hidden" id="form-arrival" name="arrival">
+            <input type="hidden" id="form-class" name="class">
+            <input type="hidden" id="form-seat" name="seat">
+            <input type="hidden" id="form-bin_slot" name="bin_slot">
+            <input type="hidden" id="form-premium_enabled" name="premium_enabled">
+            <input type="hidden" id="form-luggage_enabled" name="luggage_enabled">
+            <input type="hidden" id="form-total_cost" name="total_cost">
+
+            <!-- Passenger Details -->
+            <label for="passenger_name">Passenger Name:</label>
+            <input type="text" id="passenger_name" name="passenger_name" required>
+
+            <label for="passenger_age">Age:</label>
+            <input type="number" id="passenger_age" name="passenger_age" min="1" required>
+
+            <label for="passenger_gender">Gender:</label>
+            <select id="passenger_gender" name="passenger_gender" required>
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <!-- Payment Options -->
+            <label>Payment Method:</label>
+            <div class="payment-option">
+                <input type="radio" id="creditDebit" name="payment_method" value="creditDebit" onchange="togglePaymentDetails()" required>
+                <label for="creditDebit">Credit/Debit Card</label>
+                <input type="radio" id="netbanking" name="payment_method" value="netbanking" onchange="togglePaymentDetails()">
+                <label for="netbanking">Net Banking</label>
+            </div>
+
+            <!-- Credit/Debit Card Details -->
+            <div class="payment-details" id="creditDebitDetails">
+                <label for="card_holder">Card Holder Name:</label>
+                <input type="text" id="card_holder" name="card_holder">
+
+                <label for="card_number">Card Number:</label>
+                <input type="text" id="card_number" name="card_number" pattern="\d{16}" placeholder="16-digit card number">
+
+                <label for="expiry_date">Expiry Date (MM/YY):</label>
+                <input type="text" id="expiry_date" name="expiry_date" pattern="\d{2}/\d{2}" placeholder="MM/YY">
+
+                <label for="cvv">CVV:</label>
+                <input type="text" id="cvv" name="cvv" pattern="\d{3}" placeholder="3-digit CVV">
+            </div>
+
+            <!-- Net Banking Details -->
+            <div class="netbanking-details" id="netbankingDetails">
+                <label for="bank_name">Bank Name:</label>
+                <select id="bank_name" name="bank_name">
+                    <option value="">Select Bank</option>
+                    <option value="SBI">State Bank of India</option>
+                    <option value="HDFC">HDFC Bank</option>
+                    <option value="ICICI">ICICI Bank</option>
+                    <option value="Axis">Axis Bank</option>
+                </select>
+            </div>
+
+            <button type="submit">Confirm Booking</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Function to get URL parameters
+    function getUrlParams() {
+        const params = new URLSearchParams(window.location.search);
+        return {
+            flightId: params.get('flightId') || '',
+            flightName: params.get('flightName') || '',
+            route: params.get('route') || '',
+            departure: params.get('departure') || '',
+            arrival: params.get('arrival') || '',
+            class: params.get('class') || '',
+            seat: params.get('seat') || '',
+            bin_slot: params.get('bin_slot') || '',
+            premium_enabled: params.get('premium_enabled') === '1',
+            luggage_enabled: params.get('luggage_enabled') === '1',
+            total_cost: parseFloat(params.get('total_cost')) || 0
+        };
+    }
+
+    // Populate the page with flight details
+    window.onload = () => {
+        const data = getUrlParams();
+
+        // Populate flight details
+        document.getElementById('flight-name').textContent = data.flightName;
+        document.getElementById('route').textContent = data.route;
+        document.getElementById('departure').textContent = data.departure;
+        document.getElementById('arrival').textContent = data.arrival;
+        document.getElementById('class').textContent = data.class;
+        document.getElementById('seat').textContent = data.seat;
+        document.getElementById('premium-enabled').textContent = data.premium_enabled ? 'Yes (₹2000)' : 'No';
+        document.getElementById('bin-slot').textContent = data.luggage_enabled && data.bin_slot ? data.bin_slot : 'Not Selected';
+        document.getElementById('total-cost').textContent = data.total_cost.toFixed(2);
+
+        // Populate hidden form fields
+        document.getElementById('form-flightId').value = data.flightId;
+        document.getElementById('form-flightName').value = data.flightName;
+        document.getElementById('form-route').value = data.route;
+        document.getElementById('form-departure').value = data.departure;
+        document.getElementById('form-arrival').value = data.arrival;
+        document.getElementById('form-class').value = data.class;
+        document.getElementById('form-seat').value = data.seat;
+        document.getElementById('form-bin_slot').value = data.bin_slot;
+        document.getElementById('form-premium_enabled').value = data.premium_enabled ? '1' : '0';
+        document.getElementById('form-luggage_enabled').value = data.luggage_enabled ? '1' : '0';
+        document.getElementById('form-total_cost').value = data.total_cost;
+    };
+
+    function togglePaymentDetails() {
+        const creditDebit = document.getElementById('creditDebit').checked;
+        const netbanking = document.getElementById('netbanking').checked;
+        document.getElementById('creditDebitDetails').style.display = creditDebit ? 'block' : 'none';
+        document.getElementById('netbankingDetails').style.display = netbanking ? 'block' : 'none';
+
+        // Set required attributes based on payment method
+        document.getElementById('card_holder').required = creditDebit;
+        document.getElementById('card_number').required = creditDebit;
+        document.getElementById('expiry_date').required = creditDebit;
+        document.getElementById('cvv').required = creditDebit;
+        document.getElementById('bank_name').required = netbanking;
+    }
+
+    function submitBooking(event) {
+        event.preventDefault();
+
+        const form = document.getElementById('passengerPaymentForm');
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData);
+
+        // Create URL parameters
+        const params = new URLSearchParams({
+            flightId: data.flightId,
+            flightName: data.flightName,
+            route: data.route,
+            departure: data.departure,
+            arrival: data.arrival,
+            class: data.class,
+            seat: data.seat,
+            bin_slot: data.bin_slot,
+            premium_enabled: data.premium_enabled,
+            luggage_enabled: data.luggage_enabled,
+            total_cost: data.total_cost,
+            passenger_name: data.passenger_name,
+            passenger_age: data.passenger_age,
+            passenger_gender: data.passenger_gender,
+            payment_method: data.payment_method,
+            card_holder: data.card_holder || '',
+            card_number: data.card_number || '',
+            expiry_date: data.expiry_date || '',
+            cvv: data.cvv || '',
+            bank_name: data.bank_name || ''
+        });
+
+        // Redirect to book_flights.html
+        window.location.href = `book_flights.html?${params.toString()}`;
+    }
+</script>
+</body>
+</html>
