@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MakeEzy - Premium Travel Booking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Ensure the slider acts as a full-screen background */
+        .slider {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .slide.active {
+            opacity: 1;
+        }
+
+        /* Header styles */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 50;
+        }
+
+        /* Overlay container for icons and search tab */
+        .overlay-content {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3); /* Semi-transparent overlay for readability */
+        }
+
+        /* Login overlay styles */
+        .login-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .login-button {
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .login-button:hover {
+            background: #0056b3;
+        }
+
+        /* Icon and form styles */
+        .icon-card {
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .icon-card:hover {
+            transform: scale(1.1);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Popular Destinations and Offers */
+        .section-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Two columns */
+            gap: 2rem;
+            padding: 2rem;
+            background: #2d2d2d; /* Darker background for contrast */
+            border-radius: 12px;
+            margin: 2rem 0;
+        }
+
+        .left-section, .right-section {
+            padding: 1rem;
+        }
+
+        .destinations-slider-container {
+            overflow: hidden;
+        }
+
+        .destinations-slider {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .card {
+            flex: 0 0 33.33%; /* Show 3 cards at a time */
+            margin-right: 1rem;
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .card img {
+            width: 100%;
+            height: 250px; /* Increased height for better appearance */
+            object-fit: cover;
+        }
+
+        .card-content {
+            position: absolute;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7); /* Darker overlay for better readability */
+            color: white;
+            width: 100%;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .card-description {
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .cta {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+
+        .cta:hover {
+            background: #0056b3;
+        }
+
+        /* Footer styles */
+        .footer {
+            background: #1a1a1a;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .footer-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .footer-section {
+            margin: 10px;
+        }
+
+        .footer-section h3 {
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section ul li {
+            margin: 5px 0;
+        }
+
+        .footer-section ul li a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .footer-bottom {
+            margin-top: 20px;
+            color: #888;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .section-container {
+                grid-template-columns: 1fr; /* Stack on smaller screens */
+            }
+
+            .card {
+                flex: 0 0 50%; /* Show 2 cards at a time on smaller screens */
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+    <!-- Background Slider -->
+    <div class="slider">
+        <div class="slide" style="background-image: url('https://wallpaperaccess.com/full/1128280.jpg');"></div>
+        <div class="slide" style="background-image: url('https://pxwall.com/wp-content/uploads/2019/04/4K-Nature-Desktop-Wallpapers.jpg');"></div>
+        <div class="slide" style="background-image: url('https://www.voucherwonderland.com/reisemagazin/wp-content/uploads/2015/09/Kalanggaman-Beach-Philippinen.jpeg');"></div>
+        <div class="slide" style="background-image: url('https://www.pixelstalk.net/wp-content/uploads/2016/07/Peaceful-Desktop-Backgrounds.jpeg');"></div>
+    </div>
+
+    <!-- Header Section -->
+	
+    <header class="p-6 flex justify-between items-center bg-opacity-30 bg-black shadow-lg">
+        <h1 class="text-3xl font-extrabold text-white">MakeEzy ✈️</h1>
+		
+        <nav>
+            <ul class="flex space-x-6 text-lg">
+                <li><a href="#" class="hover:text-blue-400 transition">Home</a></li>
+                <li><a href="about.html" class="hover:text-blue-400 transition">About</a></li>
+                <li><a href="#" class="hover:text-blue-400 transition" onclick="openLogin()">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+	
+	<!-- Project Credits Section -->
+<div class="relative z-20 p-4 text-center bg-opacity-50 bg-black">
+    <h1 class="text-3xl font-extrabold text-white" style="font-size: 1.5rem; color: #007bff;">WEB PROGRAMMING</h1>
+    <h1 style="font-size: 1.2rem;">BTECH CSE (DATA SCIENCE) 2024-2025</h1>
+    <h1 style="font-size: 1rem;">Nitharsana.C  23BDS1150</h1>
+    <h1 style="font-size: 1rem;">Shivaroshini.k  23BDS1130</h1>
+    <h1 style="font-size: 1rem;">Harini.U.S   23BDS1135</h1>
+</div>
+	
+
+    <!-- Overlay Content (Icons and Search Tab) -->
+    <div class="overlay-content">
+        <!-- Login Overlay -->
+        <div class="login-overlay" id="loginOverlay">
+            <button class="close-btn" onclick="closeLogin()">×</button>
+            <div class="login-container">
+                <h2 style="text-align:center;color:black;">Login</h2>
+                <input type="email" id="loginEmail" placeholder="Email ID" required style="color:black;">
+                <input type="password" id="loginPassword" placeholder="Password" required style="color:black;">
+                <input type="number" id="mobile" placeholder="mobile number" required style="color:black;">
+                <button class="login-button" onclick="handleLogin()">Login</button>
+            </div>
+        </div>
+
+        <!-- Icons Section -->
+        <section class="p-6 flex justify-center gap-6">
+            <div class="flex gap-6">
+                <div class="icon-card" onclick="showForm('flights')">
+                    <img src="airplane.png" alt="Flight Icon" style="width: 64px; height: 64px;">
+                    <p class="text-center text-white font-bold">Flights</p>
+                </div>
+                <div class="icon-card" onclick="showForm('trains')">
+                    <img src="train.png" alt="Train Icon" style="width: 64px; height: 64px;">
+                    <p class="text-center text-white font-bold">Trains</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hero Section (Search Tab) -->
+        <section class="flex items-center justify-center py-10">
+            <div class="glass-card w-2/3 text-black">
+                <h2 class="text-4xl font-bold mb-4 text-center text-white">Find Your Next Destination</h2>
+
+               <!-- Flights Form -->
+<div id="flights" class="form-container">
+    <div class="grid grid-cols-2 gap-4">
+        <input type="text" placeholder="From" class="p-3 border rounded-md focus:outline-none">
+        <input type="text" placeholder="To" class="p-3 border rounded-md focus:outline-none">
+        <input type="date" class="p-3 border rounded-md focus:outline-none">
+        <select class="p-3 border rounded-md focus:outline-none">
+            <option>1 Traveller</option>
+            <option>2 Travellers</option>
+            <option>3+ Travellers</option>
+        </select>
+    </div>
+    <button onclick="location.href='http://localhost/test2/index.php'" class="mt-6 w-full bg-green-600 text-white py-3 rounded-lg text-xl font-semibold hover:bg-green-700 transition">
+        Search Flights
+    </button>
+</div>
+                
+
+                <!-- Trains Form -->
+                <div id="trains" class="form-container hidden">
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="text" placeholder="From" class="p-3 border rounded-md focus:outline-none">
+                        <input type="text" placeholder="To" class="p-3 border rounded-md focus:outline-none">
+                        <input type="date" class="p-3 border rounded-md focus:outline-none">
+                        <select class="p-3 border rounded-md focus:outline-none">
+                            <option>1 Traveller</option>
+                            <option>2 Travellers</option>
+                            <option>3+ Travellers</option>
+                        </select>
+                    </div>
+                    <button onclick="location.href='http://localhost/test2/train1.php'" class="mt-6 w-full bg-blue-600 text-white py-3 rounded-lg text-xl font-semibold hover:bg-blue-700 transition">Search Trains</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Content Below the Slider -->
+    <div class="relative z-10">
+        <!-- Popular Destinations and Offers Sections -->
+        <div class="container px-6">
+            <div class="section-container">
+                <!-- Left Section: Popular Destinations -->
+                <div class="left-section">
+                    <h1 style="font-size: 1.875rem; font-weight: bold; text-align: center; color: white;">Popular Destinations</h1>
+                    <div class="destinations-slider-container">
+                        <div class="destinations-slider">
+                            <div class="card"><img src="https://www.oyorooms.com/travel-guide/wp-content/uploads/2019/03/Meenakshi-Temple.jpg" alt="Madurai - Meenakshi temple"><div class="card-content"><div class="card-title">Madurai - Meenakshi Temple</div></div></div>
+                            <div class="card"><img src="https://globalgrasshopper.com/wp-content/uploads/2011/01/Mumbai-India-scaled.jpg" alt="Destination 2"><div class="card-content"><div class="card-title">Mumbai</div></div></div>
+                            <div class="card"><img src="https://www.ekeralatourism.net/wp-content/uploads/2018/03/Alleppey.jpg" alt="Destination 3"><div class="card-content"><div class="card-title">Kerala - Boat House</div></div></div>
+                            <div class="card"><img src="https://www.planetware.com/wpimages/2019/08/switzerland-top-tourist-attractions-albula-bernina-railway-line.jpg" alt="Destination 4"><div class="card-content"><div class="card-title">Switzerland</div></div></div>
+                            <div class="card"><img src="https://thumbs.dreamstime.com/b/beautiful-landscape-travel-destination-tourist-attractions-singapore-city-marina-bay-sand-famous-place-singapore-160704960.jpg" alt="Destination 5"><div class="card-content"><div class="card-title">Singapore</div></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Section: Offers -->
+                <div class="right-section">
+                    <h1 style="font-size: 2rem; font-weight: bold; text-align: center; color: white; margin-bottom: 2rem;">Offers</h1>
+                    <div class="card-container">
+                        <div class="card"><img src="https://i.pinimg.com/originals/59/06/eb/5906ebae9fcede85d732b6a3a1740f68.jpg" alt="Offer 1"><div class="card-content"><div class="card-title">Offer 1</div><div class="card-description">Discounts up to 50%!</div><a href="#" class="cta">Book Now</a></div></div>
+                        <div class="card"><img src="https://gos3.ibcdn.com/gorail-lp-1565930600.jpg" alt="Offer 2"><div class="card-content"><div class="card-title">Offer 2</div><div class="card-description">Special Packages!</div><a href="#" class="cta">Book Now</a></div></div>
+                        <div class="card"><img src="https://i.pinimg.com/736x/7f/6b/70/7f6b70513aab9f649dba688535abd3ff.jpg" alt="Offer 3"><div class="card-content"><div class="card-title">Offer 3</div><div class="card-description">Free Upgrades!</div><a href="#" class="cta">Book Now</a></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-container">
+                <!-- Customer Reviews -->
+                <div class="footer-section">
+                    <h3>Customer Reviews</h3>
+                    <ul>
+                        <li>⭐⭐⭐⭐⭐ "Amazing experience!"</li>
+                        <li>⭐⭐⭐⭐ "Loved the packages!"</li>
+                        <li>⭐⭐⭐⭐⭐ "Best travel agency!"</li>
+                        <li>⭐⭐⭐⭐ "Great deals & offers!"</li>
+                    </ul>
+                </div>
+
+                <!-- Featured Packages -->
+                <div class="footer-section">
+                    <h3>Featured Packages</h3>
+                    <ul>
+                        <li><a href="#">Honeymoon Special</a></li>
+                        <li><a href="#">Adventure Trips</a></li>
+                        <li><a href="#">Luxury Getaways</a></li>
+                        <li><a href="#">Family Vacations</a></li>
+                    </ul>
+                </div>
+
+                <!-- Why Choose Us -->
+                <div class="footer-section">
+                    <h3>Why Choose Us?</h3>
+                    <ul>
+                        <li>✔ Best Price Guarantee</li>
+                        <li>✔ 24/7 Customer Support</li>
+                        <li>✔ Trusted Travel Partners</li>
+                        <li>✔ Personalized Experiences</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                © 2025 Travel Company | All Rights Reserved
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Function to open login overlay
+        function openLogin() {
+            document.getElementById("loginOverlay").style.display = "block";
+        }
+
+        // Function to close login overlay
+        function closeLogin() {
+            document.getElementById("loginOverlay").style.display = "none";
+        }
+
+        // Function to handle login
+        function handleLogin() {
+            let email = document.getElementById("loginEmail").value;
+            let password = document.getElementById("loginPassword").value;
+
+            if (email === "" || password === "") {
+                alert("⚠️ Please enter both email and password.");
+                return;
+            }
+
+            alert("✅ Login Successful! Welcome to MakeEzy! ✈️🚆🚌");
+            closeLogin();
+        }
+
+        // Function to show forms dynamically
+        function showForm(form) {
+            const forms = ['flights', 'trains'];
+            forms.forEach(f => {
+                const formContainer = document.getElementById(f);
+                formContainer.classList.add('hidden');
+            });
+
+            const selectedForm = document.getElementById(form);
+            selectedForm.classList.remove('hidden');
+        }
+
+        // Set default section on page load
+        window.onload = function() {
+            showForm('flights'); // Default to Flights
+
+            // Background slider logic
+            const slides = document.querySelectorAll('.slide');
+            let currentSlide = 0;
+
+            slides[currentSlide].classList.add('active');
+
+            setInterval(() => {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+            }, 3000);
+        };
+
+        // Sliding logic for destinations
+        let destinationsSlider = document.querySelector('.destinations-slider');
+        let slideIndex = 0;
+
+        function showNextSlide() {
+            slideIndex++;
+            if (slideIndex >= Math.ceil(destinationsSlider.children.length / 3)) { // Adjust for 3 cards visible
+                slideIndex = 0;
+            }
+            destinationsSlider.style.transform = `translateX(-${slideIndex * 33.33}%)`;
+        }
+
+        setInterval(showNextSlide, 3000);
+    </script>
+</body>
+</html>
